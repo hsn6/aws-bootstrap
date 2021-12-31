@@ -8,8 +8,9 @@ Parameters:
     Default: '/aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-gp2'
 
 Resources:
+
   SecurityGroup:
-    Type: AWS::EC2::SecurityGroup
+    Type: "AWS::EC2::SecurityGroup"
     Properties:
       GroupDescription: !Sub 'Internal Security group for ${AWS::StackName}'
       SecurityGroupIngress:
@@ -24,7 +25,6 @@ Resources:
       Tags:
         - Key: Name
           Value: !Ref AWS::StackName
-
   InstanceRole:
     Type: "AWS::IAM::Role"
     Properties:
@@ -41,18 +41,16 @@ Resources:
       Tags:
         - Key: Name
           Value: !Ref AWS::StackName
-
   InstanceProfile:
     Type: "AWS::IAM::InstanceProfile"
     Properties:
       Roles:
         - Ref: InstanceRole
-
   Instance:
     Type: AWS::EC2::Instance
     CreationPolicy:
       ResourceSignal:
-        Timeout: PT15M
+        Timeout: PT30M
         Count: 1
     Metadata:
       AWS::CloudFormation::Init:
@@ -99,7 +97,7 @@ Resources:
             nvm use v12.7.0
 
             # Download latest code, unzip it into /home/ec2-user/app
-            wget https://github.com/hsn6/aws-bootstrap/archive/main.zip --output main.zip
+            wget https://github.com/hsn6/aws-bootstrap/archive/main.zip
             unzip main.zip
             mv aws-bootstrap-main app
 
@@ -117,6 +115,14 @@ Resources:
 
           # Signal to CloudFormation that the instance is ready
           /opt/aws/bin/cfn-signal -e $? --stack ${AWS::StackName} --region ${AWS::Region} --resource Instance
+
       Tags:
         - Key: Name
           Value: !Ref AWS::StackName
+
+Outputs:
+  InstanceEndpoint:
+    Description: The DNS name for the created instance
+    Value: !Sub "http://${Instance.PublicDnsName}:8080"
+    Export:
+      Name: InstanceEndpoint

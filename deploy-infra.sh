@@ -1,8 +1,9 @@
 #!/bin/bash
 
+STACK_NAME=awsbootstrap
 REGION=us-west-2
 CLI_PROFILE=awsbootstrap
-STACK_NAME=awsbootstrap
+
 EC2_INSTANCE_TYPE=t2.micro
 
 # Deploy the CloudFormation template
